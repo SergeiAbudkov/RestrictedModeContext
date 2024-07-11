@@ -5,7 +5,7 @@ import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.savedstate.SavedStateRegistryOwner
-import com.restrictedmodecontext.foundation.BaseApplication
+import com.restrictedmodecontext.foundation.SingletonScopeDependencies
 import java.lang.reflect.Constructor
 import com.restrictedmodecontext.foundation.views.BaseScreen.Companion.ARG_SCREEN
 import com.restrictedmodecontext.foundation.views.activity.ActivityDelegateHolder
@@ -15,7 +15,7 @@ import com.restrictedmodecontext.foundation.views.activity.ActivityDelegateHolde
  * Use this method for getting view-models from your fragments
  */
 inline fun <reified VM : ViewModel> BaseFragment.screenViewModel() = viewModels<VM> {
-    val application = requireActivity().application as BaseApplication
+    val application = requireActivity().application
     val screen = requireArguments().getSerializable(ARG_SCREEN) as BaseScreen
 
     val activityScopeViewModel = (requireActivity() as ActivityDelegateHolder).delegate.getActivityScopeViewModel()
@@ -24,7 +24,7 @@ inline fun <reified VM : ViewModel> BaseFragment.screenViewModel() = viewModels<
     // - singleton scope dependencies (repositories) -> from App class
     // - activity VM scope dependencies -> from ActivityScopeViewModel
     // - screen VM scope dependencies -> screen args
-    val dependencies = listOf(screen) + activityScopeViewModel.sideEffectMediators + application.singletonScopeDependencies
+    val dependencies = listOf(screen) + activityScopeViewModel.sideEffectMediators + SingletonScopeDependencies.getSingletonScopeDependencies(application)
 
     // creating factory
     ViewModelFactory(dependencies, this)
